@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import links to files into TiddlyWiki</title>
+    <style>
+        /* Style document as similar to TiddlyWiki as possible */
+        /* ..., or maybe similar to https://tiddlywiki.com/dev/static/TiddlyWiki%2520Drag%2520and%2520Drop%2520Interoperability.html */
+        html, body {
+            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+            text-rendering: optimizelegibility;
+            margin: 0;
+            height: 100%
+        }
+
+        #draggable {
+            background-color: #e5f8fd
+        }
+
+        @media (max-width: 959px) {
+            #draggable {
+                position: relative;
+                padding: 14px;
+                margin-top: 0.5em;
+                margin-bottom: 0.5em
+            }
+        }
+
+        @media (min-width: 960px) {
+            #draggable {
+                width: 770px;
+                padding: 42px;
+                margin-left: 42px;
+                margin-top: 42px
+            }
+        }
+
+        /* Like in startup-warning-preview */
+        summary {
+            font-weight: bold;
+            font-size: 1.2em;
+            user-select: none
+        }
+
+        details ul {
+            padding-left: 0
+        }
+
+        details ul li {
+            list-style-type: none
+        }
+
+        /* Styles for the first step */
+        body.no-files-present details {
+            display: none
+        }
+
+        body::before {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            pointer-events: none
+        }
+
+        body.no-files-present {
+            background-color: #f7f7f9
+        }
+
+        body.no-files-present::before {
+            content: "Please drag files here"
+        }
+
+        body.no-files-present.dragging::before {
+            content: "Drop here";
+            background-color: rgba(0, 255, 0, 0.6)
+        }
+
+        body.files-present {
+            background-color: #f4d7a3
+        }
+
+        body.files-present::before {
+            content: "Now drag the list of dropped files to TiddlyWiki";
+        }
+    </style>
+</head>
+<body class="no-files-present">
+    <details id="draggable" draggable="true">
+        <summary>List of dropped files</summary>
+        <ul id="file-list">
+        </ul>
+    </details>
+    <script>
+        var fileTiddlers = [];
+
+        document.addEventListener('dragenter', function(event) {
+            event.preventDefault();
+            document.body.classList.add('dragging');
+            event.dataTransfer.dropEffect = 'link';
+        }, true);
+
+        document.addEventListener('dragover', function(event) {
+            event.preventDefault();
+            document.body.classList.add('dragging');
+            event.dataTransfer.dropEffect = 'link';
+        }, true);
+
+        document.addEventListener('dragleave', function(event) {
+            event.preventDefault();
+            document.body.classList.remove('dragging');
+        }, true);
+
+        document.addEventListener('drop', function(event) {
+            event.preventDefault();
+            document.body.classList.remove('dragging');
+
+            var fileListElement = document.getElementById('file-list'),
+                fileEntryElement,
+                file,
+                tiddlerBody = function(f) {
+                    var mainType = file.type.split('/')[0];
+                    switch (file.type) {
+                        case 'image': return '<img src="' + file.name + '">';
+                        case 'audio': return '<audio src="' + file.name + '">';
+                        case 'video': return '<video src="' + file.name + '">';
+                        default: return '<a href="' + file.name + '">' + file.name + '</a>';
+                    }
+                };
+            for (var i = 0; i < event.dataTransfer.files.length; i++) {
+                file = event.dataTransfer.files[i];
+
+                // Create a new tiddler
+                fileTiddlers.push({
+                    title: file.name,
+                    text: tiddlerBody(file)
+                });
+
+                // Create file list entry
+                fileEntryElement = document.createElement('li');
+                fileEntryElement.textContent = file.name;
+                fileListElement.appendChild(fileEntryElement);
+            }
+
+            document.body.classList.remove('no-files-present');
+            document.body.classList.add('files-present');
+        }, true);
+
+        document.getElementById('draggable').addEventListener('dragstart', function(event) {
+            event.dataTransfer.setData('URL', 'data:text/vnd.tiddler,' + encodeURIComponent(JSON.stringify(fileTiddlers)));
+            event.dataTransfer.setData('Text', 'Please drop the list over TiddlyWiki!');
+            event.stopPropagation();
+            return false;
+        });
+    </script>
+</body>
+</html>
