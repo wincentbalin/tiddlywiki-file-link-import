@@ -127,12 +127,12 @@
                 fileEntryElement,
                 file,
                 tiddlerBody = function(f) {
-                    var mainType = file.type.split('/')[0];
-                    switch (file.type) {
-                        case 'image': return '<img src="' + file.name + '">';
-                        case 'audio': return '<audio src="' + file.name + '">';
-                        case 'video': return '<video src="' + file.name + '">';
-                        default: return '<a href="' + file.name + '">' + file.name + '</a>';
+                    var mainType = f.type.split('/')[0];
+                    switch (mainType) {
+                        case 'image': return '<img src="' + f.name + '">';
+                        case 'audio': return '<audio src="' + f.name + '">';
+                        case 'video': return '<video src="' + f.name + '">';
+                        default: return '<a href="' + f.name + '">' + f.name + '</a>';
                     }
                 };
             for (var i = 0; i < event.dataTransfer.files.length; i++) {
