@@ -130,8 +130,8 @@
                     var mainType = f.type.split('/')[0];
                     switch (mainType) {
                         case 'image': return '<img src="' + f.name + '">';
-                        case 'audio': return '<audio src="' + f.name + '">';
-                        case 'video': return '<video src="' + f.name + '">';
+                        case 'audio': return '<audio src="' + f.name + '" controls>';
+                        case 'video': return '<video src="' + f.name + '" controls>';
                         default: return '<a href="' + f.name + '">' + f.name + '</a>';
                     }
                 };
